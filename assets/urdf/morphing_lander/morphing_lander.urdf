@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="morphing_lander">
+<!-- links -->
+  <link name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.012442 -0.000498 0.081712"
+        rpy="0 0 0" />
+      <mass
+        value="2.75" />
+      <inertia
+        ixx="0.01"
+        ixy="0"
+        ixz="0"
+        iyy="0.01"
+        iyz="0"
+        izz="0.01" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/base_link.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/base_link.obj" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="arml">
+    <inertial>
+      <origin
+        xyz="0.0002 0.12728 0.028398"
+        rpy="0 0 0" />
+      <mass
+        value="1.31" />
+      <inertia
+        ixx="0.01"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.04"
+        iyz="0.0"
+        izz="0.04" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/arml.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/arml.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="armr">
+    <inertial>
+      <origin
+        xyz="0.0002 -0.12728 0.028398"
+        rpy="0 0 0" />
+      <mass
+        value="1.31" />
+      <inertia
+        ixx="0.01"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.04"
+        iyz="0.0"
+        izz="0.04" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/armr.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/armr.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="rotor0">
+    <inertial>
+      <origin
+        xyz="8.709E-06 4.3361E-06 0.0061124"
+        rpy="0 0 0" />
+      <mass
+        value="0.0071415" />
+      <inertia
+        ixx="7.3155E-06"
+        ixy="1.4991E-09"
+        ixz="-3.786E-10"
+        iyy="7.3155E-06"
+        iyz="2.4588E-12"
+        izz="1.4546E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor0.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.50196 0.50196 0.50196 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor0.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="rotor1">
+    <inertial>
+      <origin
+        xyz="-8.8003E-06 -4.4578E-06 0.0061124"
+        rpy="0 0 0" />
+      <mass
+        value="0.0071414" />
+      <inertia
+        ixx="7.3156E-06"
+        ixy="1.5289E-09"
+        ixz="3.7763E-10"
+        iyy="7.3155E-06"
+        iyz="-3.6884E-12"
+        izz="1.4546E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor1.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.50196 0.50196 0.50196 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor1.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="rotor2">
+    <inertial>
+      <origin
+        xyz="-1.5704E-05 8.0308E-06 0.0061096"
+        rpy="0 0 0" />
+      <mass
+        value="0.0071457" />
+      <inertia
+        ixx="7.3203E-06"
+        ixy="-1.3287E-09"
+        ixz="-2.4103E-10"
+        iyy="7.3144E-06"
+        iyz="1.672E-10"
+        izz="1.455E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor2.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor2.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="rotor3">
+    <inertial>
+      <origin
+        xyz="1.5942E-05 -7.8741E-06 0.0061096"
+        rpy="0 0 0" />
+      <mass
+        value="0.0071457" />
+      <inertia
+        ixx="7.3203E-06"
+        ixy="-1.4137E-09"
+        ixz="2.4357E-10"
+        iyy="7.3145E-06"
+        iyz="-1.6554E-10"
+        izz="1.455E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor3.dae" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/cast/Documents/IsaacGymEnvs/assets/urdf/morphing_lander/meshes/rotor3.obj" />
+      </geometry>
+    </collision>
+  </link>
+<!-- joints -->
+  <joint name="base_to_arml"
+    type="revolute">
+    <origin
+      xyz="0 0.068 0.094"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="arml" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.571"
+      upper="0"
+      effort="1"
+      velocity="0.39269908169" />
+  </joint>
+  <joint name="base_to_armr"
+    type="revolute">
+    <origin
+      xyz="0 -0.068 0.094"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="armr" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.571"
+      upper="0"
+      effort="1"
+      velocity="0.39269908169" />
+  </joint>
+  <joint name="armr_to_rotor0"
+    type="revolute">
+    <origin
+      xyz="0.165 -0.13673 0.062563"
+      rpy="0 0 0" />
+    <parent
+      link="armr" />
+    <child
+      link="rotor0" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1e12"
+      upper="1e12"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <joint name="arml_to_rotor1"
+    type="revolute">
+    <origin
+      xyz="-0.165 0.13673 0.062562"
+      rpy="0 0 0" />
+    <parent
+      link="arml" />
+    <child
+      link="rotor1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1e12"
+      upper="1e12"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <joint name="arml_to_rotor2"
+    type="revolute">
+    <origin
+      xyz="0.165 0.13673 0.062562"
+      rpy="0 0 0" />
+    <parent
+      link="arml" />
+    <child
+      link="rotor2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1e12"
+      upper="1e12"
+      effort="1"
+      velocity="1" />
+  </joint>
+  <joint name="armr_to_rotor3"
+    type="revolute">
+    <origin
+      xyz="-0.165 -0.13673 0.062563"
+      rpy="0 0 0" />
+    <parent
+      link="armr" />
+    <child
+      link="rotor3" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1e12"
+      upper="1e12"
+      effort="1"
+      velocity="1" />
+  </joint>
+
+</robot>
+

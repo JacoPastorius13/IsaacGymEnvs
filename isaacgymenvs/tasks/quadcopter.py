@@ -62,9 +62,9 @@ class Quadcopter(VecTask):
         self.cfg["env"]["numActions"] = num_acts
 
         super().__init__(config=self.cfg, rl_device=rl_device, sim_device=sim_device, graphics_device_id=graphics_device_id, headless=headless, virtual_screen_capture=virtual_screen_capture, force_render=force_render)
-
         self.root_tensor = self.gym.acquire_actor_root_state_tensor(self.sim)
         self.dof_state_tensor = self.gym.acquire_dof_state_tensor(self.sim)
+        print("dof_tensor shape: ", self.dof_state_tensor.shape)
 
         vec_root_tensor = gymtorch.wrap_tensor(self.root_tensor).view(self.num_envs, 13)
         vec_dof_tensor = gymtorch.wrap_tensor(self.dof_state_tensor).view(self.num_envs, dofs_per_env, 2)
@@ -77,11 +77,13 @@ class Quadcopter(VecTask):
 
         self.dof_states = vec_dof_tensor
         self.dof_positions = vec_dof_tensor[..., 0]
+        print("dof_positions shape: ", self.dof_positions.shape)
         self.dof_velocities = vec_dof_tensor[..., 1]
 
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
-
+        
+        print("dof_positions after refresh: ", self.dof_positions)
         self.initial_root_states = vec_root_tensor.clone()
         self.initial_dof_states = vec_dof_tensor.clone()
 
@@ -91,6 +93,7 @@ class Quadcopter(VecTask):
 
         # control tensors
         self.dof_position_targets = torch.zeros((self.num_envs, dofs_per_env), dtype=torch.float32, device=self.device, requires_grad=False)
+        print("dof_position_targets shape: ", self.dof_position_targets.shape)
         self.thrusts = torch.zeros((self.num_envs, 4), dtype=torch.float32, device=self.device, requires_grad=False)
         self.forces = torch.zeros((self.num_envs, bodies_per_env, 3), dtype=torch.float32, device=self.device, requires_grad=False)
 
