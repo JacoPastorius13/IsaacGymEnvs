@@ -26,7 +26,7 @@ sim:
   dt: 0.01
   substeps: 2
   up_axis: "z"
-  use_gpu_pipeline: ${eq:${...pipeline},"gpu"}
+  use_gpu_pipeline: ${eq:${...pipeline},"cpu"}
   gravity: [0.0, 0.0, -9.81]
   physx:
     num_threads: ${....num_threads}

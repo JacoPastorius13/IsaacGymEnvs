@@ -78,7 +78,7 @@ class Quadcopter(VecTask):
         self.dof_states = vec_dof_tensor
         self.dof_positions = vec_dof_tensor[..., 0]
         print("dof_positions shape: ", self.dof_positions.shape)
-        self.dof_velocities = vec_dof_tensor[..., 1]
+        self.dof_velocities = vec_dof_tensor[..., 1] 
 
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
@@ -93,7 +93,6 @@ class Quadcopter(VecTask):
 
         # control tensors
         self.dof_position_targets = torch.zeros((self.num_envs, dofs_per_env), dtype=torch.float32, device=self.device, requires_grad=False)
-        print("dof_position_targets shape: ", self.dof_position_targets.shape)
         self.thrusts = torch.zeros((self.num_envs, 4), dtype=torch.float32, device=self.device, requires_grad=False)
         self.forces = torch.zeros((self.num_envs, bodies_per_env, 3), dtype=torch.float32, device=self.device, requires_grad=False)
 
@@ -286,6 +285,7 @@ class Quadcopter(VecTask):
 
         self.dof_states[env_ids] = self.initial_dof_states[env_ids]
 
+        
         actor_indices = self.all_actor_indices[env_ids].flatten()
 
         self.root_states[env_ids] = self.initial_root_states[env_ids]
@@ -310,9 +310,12 @@ class Quadcopter(VecTask):
 
         actions = _actions.to(self.device)
 
+        print("Tilt actions : ", actions[:, 0:8])
+        print("dof_position_targets before : ", self.dof_position_targets)
         dof_action_speed_scale = 8 * math.pi
         self.dof_position_targets += self.dt * dof_action_speed_scale * actions[:, 0:8]
         self.dof_position_targets[:] = tensor_clamp(self.dof_position_targets, self.dof_lower_limits, self.dof_upper_limits)
+        print("dof_position_targets after : ", self.dof_position_targets)
 
         thrust_action_speed_scale = 200
         self.thrusts += self.dt * thrust_action_speed_scale * actions[:, 8:12]
@@ -328,9 +331,9 @@ class Quadcopter(VecTask):
         self.forces[reset_env_ids] = 0.0
         self.dof_position_targets[reset_env_ids] = self.dof_positions[reset_env_ids]
 
-        # apply actions
         self.gym.set_dof_position_target_tensor(self.sim, gymtorch.unwrap_tensor(self.dof_position_targets))
         self.gym.apply_rigid_body_force_tensors(self.sim, gymtorch.unwrap_tensor(self.forces), None, gymapi.LOCAL_SPACE)
+        print("dof positions : ", self.dof_positions)
 
     def post_physics_step(self):
 
@@ -339,6 +342,7 @@ class Quadcopter(VecTask):
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
 
+        print("dof_positions_targets  after step: ", self.dof_position_targets)
         self.compute_observations()
         self.compute_reward()
 

@@ -73,6 +73,10 @@ class MorphingLander(VecTask):
         self.torque_lower_limit = -self.kt * self.km * torch.ones(4, device=self.device, dtype=torch.float32)
         self.torque_upper_limit = self.kt * self.km * torch.ones(4, device=self.device, dtype=torch.float32)
 
+        self.dof_lower_limit = torch.tensor([-np.pi/2, 0, 0, -np.pi/2, 0, 0], device=self.device, dtype=torch.float32)
+        self.dof_upper_limit = torch.tensor([0, 0, 0, 0, 0, 0], device=self.device, dtype=torch.float32)
+
+        
         self.dof_position_targets = torch.zeros((self.num_envs,dofs_per_env), device=self.device, dtype=torch.float32, requires_grad=False)
         self.thrusts = torch.zeros((self.num_envs, 4), dtype=torch.float32, device=self.device, requires_grad=False)
         self.forces = torch.zeros((self.num_envs, bodies_per_env, 3), dtype=torch.float32, device=self.device, requires_grad=False)
@@ -113,16 +117,8 @@ class MorphingLander(VecTask):
 
         asset_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../assets")
         asset_file = "urdf/morphing_lander/morphing_lander.urdf"
-        # if "asset" in self.cfg["env"]:
-        #     asset_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.cfg["env"]["asset"].get("assetRoot", asset_root))
-        #     asset_file = self.cfg["env"]["asset"].get("assetFileName", asset_file)
-
-        # asset_path = os.path.join(asset_root, asset_file)
-        # asset_root = os.path.dirname(asset_path)
-        # asset_file = os.path.basename(asset_path)
-
+     
         asset_options = gymapi.AssetOptions()
-        # asset_options.fix_base_link = True
         lander_asset = self.gym.load_asset(self.sim, asset_root, asset_file, asset_options)
         self.num_dof = self.gym.get_asset_dof_count(lander_asset)
         
@@ -145,6 +141,8 @@ class MorphingLander(VecTask):
             self.gym.set_actor_dof_properties(env_ptr, lander_handle, dof_props)
             names = self.gym.get_actor_rigid_body_names(env_ptr, lander_handle)
             indices = self.gym.get_actor_rigid_body_dict(env_ptr, lander_handle)
+            dof_names = self.gym.get_actor_dof_dict(env_ptr, lander_handle)
+            print("dof names : ", dof_names)
 
 
             self.envs.append(env_ptr)
@@ -172,19 +170,12 @@ class MorphingLander(VecTask):
         )
 
     def reset_idx(self, env_idx):
+        print("############################################## Resetting envs : ", env_idx)
         num_reset = len(env_idx)
-
-        # reset root states. They should be initialized randomly with the following bounds :
-        # x to 0
-        # y to 0
-        # z between 1 and 3
-        # x_dot, y_dot and z_dot between -0.5 and 0.5
-        # roll, pitch and yaw between -0.25 rad and 0.25 rad which for a quaternion corresponds to elements of
-        # roll_dot, pitch_dot and yaw_dot between -2 rad/s and 2 rad/s 
 
         self.dof_states[env_idx] = self.initial_dof_states[env_idx]
 
-        actor_indices = self.all_actor_indices[env_idx]
+        env_ids_int32 = env_idx.to(torch.int32)
 
         self.root_states[env_idx] = self.initial_root_states[env_idx]
         self.root_states[env_idx, 0] = torch.zeros(num_reset, device=self.device, dtype=torch.float32)
@@ -197,9 +188,6 @@ class MorphingLander(VecTask):
         rand_roll = np.random.uniform(self.minPitchRoll, self.maxPitchRoll)*180/np.pi
         init_quat = Rotation.from_euler('zyx', [rand_yaw, rand_pitch, rand_roll], degrees=True).as_quat()
  
-        # convert roll, pitch, yaw to quaternion
-
-
         self.root_states[env_idx, 3] = init_quat[0]*torch.ones(num_reset, device=self.device, dtype=torch.float32)
         self.root_states[env_idx, 4] = init_quat[1]*torch.ones(num_reset, device=self.device, dtype=torch.float32)
         self.root_states[env_idx, 5] = init_quat[2]*torch.ones(num_reset, device=self.device, dtype=torch.float32)
@@ -212,21 +200,24 @@ class MorphingLander(VecTask):
         self.root_states[env_idx, 10] = torch_rand_float(-2, 2, (num_reset, 1), device=self.device).flatten()
         self.root_states[env_idx, 11] = torch_rand_float(-2, 2, (num_reset, 1), device=self.device).flatten()
         self.root_states[env_idx, 12] = torch_rand_float(-2, 2, (num_reset, 1), device=self.device).flatten()
-        self.gym.set_actor_root_state_tensor_indexed(self.sim, gymtorch.unwrap_tensor(self.root_tensor), gymtorch.unwrap_tensor(actor_indices), num_reset)
+        self.gym.set_actor_root_state_tensor_indexed(self.sim, gymtorch.unwrap_tensor(self.root_tensor), gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
         self.dof_pos[env_idx] = torch.zeros((num_reset, 6), device=self.device, dtype=torch.float32)
         self.dof_vel[env_idx] = torch.zeros((num_reset, 6), device=self.device, dtype=torch.float32)
-        self.gym.set_dof_state_tensor_indexed(self.sim, gymtorch.unwrap_tensor(self.dof_tensor), gymtorch.unwrap_tensor(actor_indices), num_reset)
+        self.gym.set_dof_state_tensor_indexed(self.sim, gymtorch.unwrap_tensor(self.dof_tensor), gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
+
+        # reset forces thrusts moments torques and dof position targets
+        self.forces[env_idx] = 0.0
+        self.thrusts[env_idx] = 0.0
+        self.moments[env_idx] = 0.0
+        self.torques[env_idx] = 0.0
+
+        self.dof_position_targets[env_idx] = self.dof_pos[env_idx]
         self.reset_buf[env_idx] = 0
         self.progress_buf[env_idx] = 0
     
     def pre_physics_step(self, _actions):
-        reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
-        if len(reset_env_ids) > 0:
-            self.reset_idx(reset_env_ids)
-            # Print the root pos and orientation ater reset :
-
-        actions = _actions.to(self.device)
+        actions = _actions.clone().to(self.device)
 
         # actions is a tensor of shape (num_envs, 5) where the first 4 elements are the RPMs of the 4 rotors and the last element is the tilt propeller anglular speed
         # we will convert the RPMs to thrusts using the following formula:
@@ -245,12 +236,13 @@ class MorphingLander(VecTask):
         dof_action_speed_scale = (np.pi/2)/4
 
         # Since the dof_positions_target has the shape num_envs * 6, the tilt action should be applied to both tilt motors. so the action needs to have six elements instead of one (the four last elements being simply 0 since we never actuate the rotors) :
-
         tilt_actions = torch.zeros((self.num_envs, 6), device=self.device, dtype=torch.float32)
         tilt_actions[:, 0] = actions[:, 4]
         tilt_actions[:, 3] = actions[:, 4]
         print("tilt actions : ", actions[:, 4])
+        print("dof_position_targets before : ", self.dof_position_targets)
         self.dof_position_targets += self.dt * tilt_actions * dof_action_speed_scale 
+        self.dof_position_targets[:] = tensor_clamp(self.dof_position_targets, self.dof_lower_limit, self.dof_upper_limit)
         print("dof_position_targets : ", self.dof_position_targets)
         # The names to indey dictionnary is the following :
         # Rigid body indices :  {'arml': 1, 'armr': 4, 'base_link': 0, 'rotor0': 5, 'rotor1': 2, 'rotor2': 3, 'rotor3': 6}
@@ -261,28 +253,26 @@ class MorphingLander(VecTask):
             self.forces[:, rotor, 2] = self.thrusts[:, i]
             self.torques[:, rotor, 2] = self.moments[:, i]
         
-        self.thrusts[reset_env_ids] = 0.0
-        self.forces[reset_env_ids] = 0.0
-        self.moments[reset_env_ids] = 0.0
-        self.torques[reset_env_ids] = 0.0
-
-        self.dof_position_targets[reset_env_ids] = self.dof_pos[reset_env_ids]
-        print("dof_position_targets : ", self.dof_position_targets)
+        print("dof positions targets after :, ", self.dof_position_targets)
         self.gym.set_dof_position_target_tensor(self.sim, gymtorch.unwrap_tensor(self.dof_position_targets))
         self.gym.apply_rigid_body_force_tensors(self.sim, gymtorch.unwrap_tensor(self.forces), gymtorch.unwrap_tensor(self.torques), gymapi.LOCAL_SPACE)
+        print("dof pos before step : ", self.dof_pos)
     
     def post_physics_step(self):
         self.progress_buf += 1
 
-        self.gym.refresh_actor_root_state_tensor(self.sim)
-        self.gym.refresh_dof_state_tensor(self.sim)
+        env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
+        if len(env_ids) > 0:
+            self.reset_idx(env_ids)
 
+
+        print("Dof target pos after step : ", self.dof_position_targets)
         self.compute_reward()
         self.compute_observations()
 
         if self.viewer and self.debug_viz:
 
-            self.gym.refresh_rigid_body_state_tensor(self.sim)
+            # self.gym.refresh_rigid_body_state_tensor(self.sim)
             rotor_indices = torch.LongTensor([5, 2, 3 ,6])
             quats = self.rb_quats[:, rotor_indices]
             dirs = quat_axis(quats.view(self.num_envs * 4, 4), 2).view(self.num_envs, 4, 3)
@@ -297,18 +287,22 @@ class MorphingLander(VecTask):
             self.gym.add_lines(self.viewer, None, self.num_envs * 4, verts, colors)
     
     def compute_observations(self):
+        # self.gym.refresh_dof_state_tensor(self.sim)  # done in step
+        # self.gym.refresh_actor_root_state_tensor(self.sim)
+        # self.gym.refresh_dof_force_tensor(self.sim)
+        
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
-        
 
         target_x = 0.0
         target_y = 0.0
         target_z = 0.15
-        target_phi = -np.pi/2
+        target_phi = np.pi/2
         target_dof = [target_phi, 0, 0, target_phi, 0, 0]
-        self.obs_buf[..., 0] = (target_x - self.root_pos[..., 0]) / 3
-        self.obs_buf[..., 1] = (target_y - self.root_pos[..., 1]) / 3
-        self.obs_buf[..., 2] = (target_z - self.root_pos[..., 2]) / 3
+        # self.obs_buf[..., 0] = (target_x - self.root_pos[..., 0]) / 3
+        # self.obs_buf[..., 1] = (target_y - self.root_pos[..., 1]) / 3
+        # self.obs_buf[..., 2] = (target_z - self.root_pos[..., 2]) / 3
+        self.obs_buf[..., 0:3] = self.root_pos
         self.obs_buf[..., 3:7] = self.root_ori
         self.obs_buf[..., 7:10] = self.root_lin_vel
         self.obs_buf[..., 10:13] = self.root_ang_vel
@@ -330,13 +324,10 @@ def compute_morphing_lander_reward(root_pos, root_ori, root_lin_vel, root_ang_ve
     # spinning
     spinnage = torch.abs(root_ang_vel[..., 2])
     spinnage_reward = 1.0 / (1.0 + spinnage * spinnage)
-    print("uprightness : ", up_reward)
     # Tilt reward
     tilt = dof_pos[..., 0]
-    print("tilt : ", tilt)
     target_tilt = torch.sqrt((-np.pi/2)**2- tilt*tilt)
     tilt_reward = 1.0 / (1.0 + target_tilt * target_tilt)
-    print("tilt reward : ", tilt_reward)
     # combined reward
     # uprigness and spinning only matter when close to the target
     reward = pos_reward + pos_reward * (up_reward + spinnage_reward) + tilt_reward
