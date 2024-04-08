@@ -3,7 +3,7 @@ name: MorphingLander
 physics_engine: ${..physics_engine}
 
 env:
-  numEnvs: ${resolve_default:2,${...num_envs}}
+  numEnvs: ${resolve_default:8192,${...num_envs}}
   envSpacing: 1.25
   maxEpisodeLength: 500
   enableDebugVis: True
