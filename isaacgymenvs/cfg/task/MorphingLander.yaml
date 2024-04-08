@@ -7,6 +7,12 @@ env:
   envSpacing: 1.25
   maxEpisodeLength: 500
   enableDebugVis: True
+  terrain: 
+    randomTerrain: False
+    maxHeight: 1
+    minHeight: 0
+    step: 0.1
+    downsampledScale: 0.5
   initialStates:
     minHeight: 1
     maxHeight: 3
@@ -26,7 +32,7 @@ sim:
   dt: 0.01
   substeps: 2
   up_axis: "z"
-  use_gpu_pipeline: ${eq:${...pipeline},"cpu"}
+  use_gpu_pipeline: ${eq:${...pipeline},"gpu"}
   gravity: [0.0, 0.0, -9.81]
   physx:
     num_threads: ${....num_threads}

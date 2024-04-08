@@ -276,6 +276,8 @@
     </collision>
   </link>
 <!-- joints -->
+  
+  
   <joint name="base_to_arml"
     type="revolute">
     <origin
@@ -288,12 +290,12 @@
     <axis
       xyz="1 0 0" />
     <limit
-      lower="-1.571"
+      lower="-1.55"
       upper="0"
-      effort="100"
-      velocity="20" />
+      effort="80"
+      velocity="30" /> 
   </joint>
-
+  
   <joint name="base_to_armr"
     type="revolute">
     <origin
@@ -306,47 +308,11 @@
     <axis
       xyz="-1 0 0" />
     <limit
-      lower="-1.571"
+      lower="-1.55"
       upper="0"
-      effort="100"
-      velocity="20" />
-  </joint>
-  
-  <!-- <joint name="base_to_arml"
-    type="revolute">
-    <origin
-      xyz="0 0.068 0.094"
-      rpy="0 0 0" />
-    <parent
-      link="base_link" />
-    <child
-      link="arml" />
-    <axis
-      xyz="1 0 0" />
-    <limit
-      lower="-1.571"
-      upper="0"
-      effort="1000"
-      velocity="0.39269908169" /> -->
-  <!-- </joint> -->
-  
-  <!-- <joint name="base_to_armr"
-    type="revolute">
-    <origin
-      xyz="0 -0.068 0.094"
-      rpy="0 0 0" />
-    <parent
-      link="base_link" />
-    <child
-      link="armr" />
-    <axis
-      xyz="-1 0 0" />
-    <limit
-      lower="-1.571"
-      upper="0"
-      effort="1000"
-      velocity="0.39269908169" />
-  </joint> -->
+      effort="80"
+      velocity="30" />
+  </joint> 
   
   <joint name="armr_to_rotor0"
     type="revolute">

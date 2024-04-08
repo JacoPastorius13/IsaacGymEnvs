@@ -249,6 +249,7 @@ class Quadcopter(VecTask):
             dof_props['stiffness'].fill(1000.0)
             dof_props['damping'].fill(0.0)
             self.gym.set_actor_dof_properties(env, actor_handle, dof_props)
+            print("dof props : ", dof_props)
 
             # pretty colors
             chassis_color = gymapi.Vec3(0.8, 0.6, 0.2)
@@ -285,7 +286,7 @@ class Quadcopter(VecTask):
 
         self.dof_states[env_ids] = self.initial_dof_states[env_ids]
 
-        
+
         actor_indices = self.all_actor_indices[env_ids].flatten()
 
         self.root_states[env_ids] = self.initial_root_states[env_ids]
