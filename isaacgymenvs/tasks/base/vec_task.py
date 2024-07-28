@@ -83,6 +83,7 @@ class Env(ABC):
         if config["sim"]["use_gpu_pipeline"]:
             if self.device_type.lower() == "cuda" or self.device_type.lower() == "gpu":
                 self.device = "cuda" + ":" + str(self.device_id)
+                print("Device used : ", self.device)
             else:
                 print("GPU Pipeline can only be used with GPU simulation. Forcing CPU Pipeline.")
                 config["sim"]["use_gpu_pipeline"] = False

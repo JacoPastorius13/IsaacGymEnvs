@@ -391,7 +391,7 @@ class ComplexObsRLGPUEnv(vecenv.IVecEnv):
                 low=-np.Inf,
                 high=np.Inf,
                 shape=(sum([self.env.observation_space[s].shape[0] for s in obs_names]),),
-                dtype=np.float32,
+                dtype=float32,
             )
         else:        
             return gym.spaces.Dict(

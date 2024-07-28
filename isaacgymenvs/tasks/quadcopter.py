@@ -64,7 +64,6 @@ class Quadcopter(VecTask):
         super().__init__(config=self.cfg, rl_device=rl_device, sim_device=sim_device, graphics_device_id=graphics_device_id, headless=headless, virtual_screen_capture=virtual_screen_capture, force_render=force_render)
         self.root_tensor = self.gym.acquire_actor_root_state_tensor(self.sim)
         self.dof_state_tensor = self.gym.acquire_dof_state_tensor(self.sim)
-        print("dof_tensor shape: ", self.dof_state_tensor.shape)
 
         vec_root_tensor = gymtorch.wrap_tensor(self.root_tensor).view(self.num_envs, 13)
         vec_dof_tensor = gymtorch.wrap_tensor(self.dof_state_tensor).view(self.num_envs, dofs_per_env, 2)
@@ -77,13 +76,11 @@ class Quadcopter(VecTask):
 
         self.dof_states = vec_dof_tensor
         self.dof_positions = vec_dof_tensor[..., 0]
-        print("dof_positions shape: ", self.dof_positions.shape)
         self.dof_velocities = vec_dof_tensor[..., 1] 
 
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
         
-        print("dof_positions after refresh: ", self.dof_positions)
         self.initial_root_states = vec_root_tensor.clone()
         self.initial_dof_states = vec_dof_tensor.clone()
 
@@ -246,10 +243,9 @@ class Quadcopter(VecTask):
 
             dof_props = self.gym.get_actor_dof_properties(env, actor_handle)
             dof_props['driveMode'].fill(gymapi.DOF_MODE_POS)
-            dof_props['stiffness'].fill(1000.0)
+            dof_props['stiffness'].fill(10000000000.0)
             dof_props['damping'].fill(0.0)
             self.gym.set_actor_dof_properties(env, actor_handle, dof_props)
-            print("dof props : ", dof_props)
 
             # pretty colors
             chassis_color = gymapi.Vec3(0.8, 0.6, 0.2)
@@ -311,12 +307,9 @@ class Quadcopter(VecTask):
 
         actions = _actions.to(self.device)
 
-        print("Tilt actions : ", actions[:, 0:8])
-        print("dof_position_targets before : ", self.dof_position_targets)
         dof_action_speed_scale = 8 * math.pi
         self.dof_position_targets += self.dt * dof_action_speed_scale * actions[:, 0:8]
         self.dof_position_targets[:] = tensor_clamp(self.dof_position_targets, self.dof_lower_limits, self.dof_upper_limits)
-        print("dof_position_targets after : ", self.dof_position_targets)
 
         thrust_action_speed_scale = 200
         self.thrusts += self.dt * thrust_action_speed_scale * actions[:, 8:12]
@@ -334,7 +327,6 @@ class Quadcopter(VecTask):
 
         self.gym.set_dof_position_target_tensor(self.sim, gymtorch.unwrap_tensor(self.dof_position_targets))
         self.gym.apply_rigid_body_force_tensors(self.sim, gymtorch.unwrap_tensor(self.forces), None, gymapi.LOCAL_SPACE)
-        print("dof positions : ", self.dof_positions)
 
     def post_physics_step(self):
 
@@ -343,7 +335,6 @@ class Quadcopter(VecTask):
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
 
-        print("dof_positions_targets  after step: ", self.dof_position_targets)
         self.compute_observations()
         self.compute_reward()
 

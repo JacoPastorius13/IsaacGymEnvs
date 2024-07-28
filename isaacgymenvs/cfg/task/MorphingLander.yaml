@@ -3,22 +3,36 @@ name: MorphingLander
 physics_engine: ${..physics_engine}
 
 env:
-  numEnvs: ${resolve_default:8192,${...num_envs}}
-  envSpacing: 1.25
-  maxEpisodeLength: 500
+  numEnvs: ${resolve_default:4096,${...num_envs}}
+  envSpacing: 1.5
+  maxEpisodeLength: 700
   enableDebugVis: True
   terrain: 
-    randomTerrain: False
-    maxHeight: 1
-    minHeight: 0
-    step: 0.1
-    downsampledScale: 0.5
+    randomTerrain: 
+      rand: False
+      maxHeight: 1
+      minHeight: 0
+      step: 0.1
+      downsampledScale: 0.5
+    discreteObstacles: 
+      obst: False 
+      maxHeight: 1
+      minSize: 1.
+      maxSize: 5.
+      numRectangles: 5000
+      platformSize: 2
+      terrainWidth: 200
+      terrainLength: 200
   initialStates:
     minHeight: 1
     maxHeight: 3
     minPitchRoll: -0.25
     maxPitchRoll: 0.25
-
+    minTiltAngle: -1.05
+  vision:
+    addVision: False
+    saveFrames: False
+    
   clipObservations: 5.0
   clipActions: 1.0
 
@@ -29,8 +43,8 @@ env:
   enableCameraSensors: False
 
 sim:
-  dt: 0.01
-  substeps: 2
+  dt: 0.007
+  substeps: 4
   up_axis: "z"
   use_gpu_pipeline: ${eq:${...pipeline},"gpu"}
   gravity: [0.0, 0.0, -9.81]
@@ -39,16 +53,59 @@ sim:
     solver_type: ${....solver_type}
     use_gpu: ${contains:"cuda",${....sim_device}}
     num_position_iterations: 4
-    num_velocity_iterations: 0
+    num_velocity_iterations: 1
     contact_offset: 0.02
-    rest_offset: 0.001
+    rest_offset: 0.0
     bounce_threshold_velocity: 0.2
-    max_depenetration_velocity: 1000.0
+    max_depenetration_velocity: 100.0
     default_buffer_size_multiplier: 5.0
-    max_gpu_contact_pairs: 1048576
+    max_gpu_contact_pairs: 8388608
     num_subscenes: ${....num_subscenes}
-    contact_collection: 0
+    contact_collection: 1
   
 
 task:
   randomize: False
+  randomization_params:
+  # specify which attributes to randomize for each actor type and property
+    frequency: 600   # Define how many environment steps between generating new randomizations
+    observations:
+      range: [0, .02] # range for the white noise
+      operation: "additive"
+      distribution: "gaussian"
+    actions:
+      range: [0., .02]
+      operation: "additive"
+      distribution: "gaussian"
+    sim_params: 
+      gravity:
+        range: [0, 0.2]
+        operation: "additive"
+        distribution: "gaussian"
+        schedule: "linear"  # "linear" will linearly interpolate between no rand and max rand
+        schedule_steps: 3000
+    actor_params:
+      morphing_lander:
+        color: False
+        rigid_body_properties:
+          mass: 
+            range: [0.9, 1.1]
+            operation: "scaling"
+            distribution: "uniform"
+            setup_only: True # Property will only be randomized once before simulation is started. See Domain Randomization Documentation for more info.
+            schedule: "linear"  # "linear" will linearly interpolate between no rand and max rand
+            schedule_steps: 3000
+  disturbance:
+    max_z_force: 10.0
+    std_z_force: 1
+    std_xy_force: 5.0
+    std_torque: 5.0
+
+  tilt:
+    max_tilt_rate: 0.3926
+
+  motor:
+    tau: 0.0125
+       
+       
+

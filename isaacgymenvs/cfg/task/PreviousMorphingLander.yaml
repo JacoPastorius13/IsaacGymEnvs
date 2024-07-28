@@ -1,0 +1,67 @@
+name: MorphingLander
+
+physics_engine: ${..physics_engine}
+
+env:
+  numEnvs: ${resolve_default:256,${...num_envs}}
+  envSpacing: 1.5
+  maxEpisodeLength: 500
+  enableDebugVis: True
+  terrain: 
+    randomTerrain: 
+      rand: False
+      maxHeight: 1
+      minHeight: 0
+      step: 0.1
+      downsampledScale: 0.5
+    discreteObstacles: 
+      obst: False 
+      maxHeight: 1
+      minSize: 1.
+      maxSize: 5.
+      numRectangles: 5000
+      platformSize: 2
+      terrainWidth: 200
+      terrainLength: 200
+  initialStates:
+    minHeight: 1
+    maxHeight: 3
+    minPitchRoll: -0.25
+    maxPitchRoll: 0.25
+  vision:
+    addVision: False
+    saveFrames: False
+    
+  clipObservations: 5.0
+  clipActions: 1.0
+
+  asset:
+    assetRoot: "../../assets"
+    assetFileName: "urdf/morphing_lander/morphing_lander.urdf"
+
+  enableCameraSensors: False
+
+sim:
+  dt: 0.01
+  substeps: 4
+  up_axis: "z"
+  use_gpu_pipeline: ${eq:${...pipeline},"gpu"}
+  gravity: [0.0, 0.0, -9.81]
+  physx:
+    num_threads: ${....num_threads}
+    solver_type: ${....solver_type}
+    use_gpu: ${contains:"cuda",${....sim_device}}
+    num_position_iterations: 10
+    num_velocity_iterations: 0
+    contact_offset: 0.02
+    rest_offset: 0.001
+    bounce_threshold_velocity: 0.2
+    max_depenetration_velocity: 1000.0
+    default_buffer_size_multiplier: 5.0
+    max_gpu_contact_pairs: 1048576
+    num_subscenes: ${....num_subscenes}
+    contact_collection: 0
+  
+
+task:
+  randomize: False
